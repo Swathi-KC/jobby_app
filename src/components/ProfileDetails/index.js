@@ -49,8 +49,7 @@ class ProfileDetails extends Component {
         profileDetails: updatedData,
         apiStatus: apiStatusConstants.success,
       })
-    }
-    if (response.status === 401) {
+    } else {
       this.setState({
         apiStatus: apiStatusConstants.failure,
       })
@@ -66,7 +65,7 @@ class ProfileDetails extends Component {
           alt="profile"
           className="profile-image"
         />
-        <p className="profile-name">{profileDetails.name}</p>
+        <h1 className="profile-name">{profileDetails.name}</h1>
         <p className="profile-bio">{profileDetails.shortBio}</p>
       </div>
     )
@@ -78,36 +77,31 @@ class ProfileDetails extends Component {
     </div>
   )
 
-  onClickRetryBtn = () => {
-    this.getProfileDetails()
-  }
-
   renderProfileFailureView = () => (
     <div className="profile-failure-view">
       <button
         type="button"
+        data-testid="button"
         className="retry-btn"
-        onClick={this.onClickRetryBtn}
+        onClick={this.getProfileDetails}
       >
         Retry
       </button>
     </div>
   )
 
-  renderProfileSectionRespectiveView = () => {
+  render() {
     const {apiStatus} = this.state
     switch (apiStatus) {
       case apiStatusConstants.success:
         return this.renderProfileDetailsView()
+      case apiStatusConstants.inProgress:
+        return this.renderLoadingView()
       case apiStatusConstants.failure:
         return this.renderProfileFailureView()
       default:
-        return this.renderLoadingView()
+        return null
     }
-  }
-
-  render() {
-    return <>{this.renderProfileSectionRespectiveView()}</>
   }
 }
 

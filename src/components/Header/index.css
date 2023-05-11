@@ -13,6 +13,8 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .logo-container {
@@ -115,5 +117,10 @@
   max-width: 110px;
   width: 100px;
   height: 30px;
+  color: #f1f5f9;
+}
+
+.nav-link {
+  text-decoration: none;
   color: #f1f5f9;
 }

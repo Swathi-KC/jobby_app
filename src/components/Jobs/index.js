@@ -1,4 +1,5 @@
 import {Component} from 'react'
+import {Link} from 'react-router-dom'
 
 import './index.css'
 
@@ -84,10 +85,12 @@ class Jobs extends Component {
         this.getJobsDetails,
       )
     } else {
+      const {activeEmploymentTypeId} = this.state
+      const newActiveEmploymentTypeId = activeEmploymentTypeId.filter(
+        eachItem => eachItem !== event.target.id,
+      )
       this.setState(
-        prevState => ({
-          activeEmploymentTypeId: [...prevState.activeEmploymentTypeId],
-        }),
+        {activeEmploymentTypeId: newActiveEmploymentTypeId},
         this.getJobsDetails,
       )
     }
@@ -155,10 +158,6 @@ class Jobs extends Component {
     </div>
   )
 
-  onClickGetJobsRetryBtn = () => {
-    this.getJobsDetails()
-  }
-
   renderJobDetailsView = () => {
     const {jobDetails} = this.state
     const shouldShowJobsList = jobDetails.length > 0
@@ -167,42 +166,44 @@ class Jobs extends Component {
         <ul className="job-details-list">
           {jobDetails.map(eachJob => (
             <li key={eachJob.id} className="job-details-item">
-              <div className="job-logo-title-cont">
-                <img
-                  src={eachJob.companyLogoUrl}
-                  alt="company logo"
-                  className="company-logo-img"
-                />
-                <div className="job-title-cont">
-                  <p className="job-name">{eachJob.title}</p>
-                  <div className="ratings-cont">
-                    <img
-                      src="https://assets.ccbp.in/frontend/react-js/star-filled-img.png"
-                      alt="star-icon"
-                      className="star-img"
-                    />
-                    <p className="job-rating">{eachJob.rating}</p>
+              <Link to={`/jobs/${eachJob.id}`} className="link-item">
+                <div className="job-logo-title-cont">
+                  <img
+                    src={eachJob.companyLogoUrl}
+                    alt="company logo"
+                    className="company-logo-img"
+                  />
+                  <div className="job-title-cont">
+                    <h1 className="job-name">{eachJob.title}</h1>
+                    <div className="ratings-cont">
+                      <img
+                        src="https://assets.ccbp.in/frontend/react-js/star-filled-img.png"
+                        alt="star-icon"
+                        className="star-img"
+                      />
+                      <p className="job-rating">{eachJob.rating}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="job-location-type-salary-cont">
-                <div className="job-location-type-cont">
-                  <div className="job-location-cont">
-                    <MdLocationOn className="location-icon" />
-                    <p className="job-location">{eachJob.location}</p>
+                <div className="job-location-type-salary-cont">
+                  <div className="job-location-type-cont">
+                    <div className="job-location-cont">
+                      <MdLocationOn className="location-icon" />
+                      <p className="job-location">{eachJob.location}</p>
+                    </div>
+                    <div className="job-type-cont">
+                      <BsFillBriefcaseFill className="briefcase-icon" />
+                      <p className="job-type">{eachJob.employmentType}</p>
+                    </div>
                   </div>
-                  <div className="job-type-cont">
-                    <BsFillBriefcaseFill className="briefcase-icon" />
-                    <p className="job-type">{eachJob.employmentType}</p>
-                  </div>
+                  <p className="job-salary">{eachJob.packagePerAnnum}</p>
                 </div>
-                <p className="job-salary">{eachJob.packagePerAnnum}</p>
-              </div>
-              <hr className="horizontal-line" />
-              <div className="job-description-cont">
-                <p className="job-description-head">Description</p>
-                <p className="job-description">{eachJob.jobDescription}</p>
-              </div>
+                <hr className="horizontal-line" />
+                <div className="job-description-cont">
+                  <h1 className="job-description-head">Description</h1>
+                  <p className="job-description">{eachJob.jobDescription}</p>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>
@@ -225,21 +226,15 @@ class Jobs extends Component {
   renderJobsDetailsFailureView = () => (
     <div className="job-details-failure-cont">
       <img
-        src="https://assets.ccbp.in/frontend/react-js/nxt-trendz/nxt-trendz-products-error-view.png"
-        alt="products failure"
-        className="products-failure-img"
+        src="https://assets.ccbp.in/frontend/react-js/failure-img.png "
+        alt="failure view"
+        className="jobs-failure-img"
       />
-      <h1 className="product-failure-heading-text">
-        Oops! Something Went Wrong
-      </h1>
-      <p className="products-failure-description">
-        We cannot seem to find the page your looking for.
+      <h1 className="jobs-failure-heading-text">Oops! Something Went Wrong</h1>
+      <p className="jobs-failure-description">
+        We cannot seem to find the page you are looking for
       </p>
-      <button
-        type="button"
-        className="retry-btn"
-        onClick={this.onClickGetJobsRetryBtn}
-      >
+      <button type="button" className="retry-btn" onClick={this.getJobsDetails}>
         Retry
       </button>
     </div>
@@ -252,13 +247,15 @@ class Jobs extends Component {
         return this.renderJobDetailsView()
       case apiStatusConstants.failure:
         return this.renderJobsDetailsFailureView()
-      default:
+      case apiStatusConstants.inProgress:
         return this.renderLoadingView()
+      default:
+        return null
     }
   }
 
   render() {
-    const {searchInput} = this.state
+    const {searchInput, activeSalaryRangeId} = this.state
     return (
       <>
         <Header />
@@ -287,7 +284,7 @@ class Jobs extends Component {
 
             <hr className="horizontal-line" />
             <div className="job-info-container">
-              <p className="job-info-head">Type of Employment</p>
+              <h1 className="job-info-head">Type of Employment</h1>
               <ul className="job-info-list-cont">
                 {employmentTypesList.map(eachType => (
                   <li className="job-info-item" key={eachType.employmentTypeId}>
@@ -309,12 +306,14 @@ class Jobs extends Component {
             </div>
             <hr className="horizontal-line" />
             <div className="job-info-container">
-              <p className="job-info-head">Salary Range</p>
+              <h1 className="job-info-head">Salary Range</h1>
               <ul className="job-info-list-cont">
                 {salaryRangesList.map(eachRange => (
                   <li className="job-info-item" key={eachRange.salaryRangeId}>
                     <input
                       type="radio"
+                      value={eachRange.salaryRangeId}
+                      checked={activeSalaryRangeId === eachRange.salaryRangeId}
                       className="radio"
                       id={eachRange.salaryRangeId}
                       onChange={this.onChangeSalaryRangeId}

@@ -11,6 +11,7 @@ import {BsSearch, BsFillBriefcaseFill} from 'react-icons/bs'
 import {MdLocationOn} from 'react-icons/md'
 
 import Header from '../Header'
+import ProfileDetails from '../ProfileDetails'
 
 const employmentTypesList = [
   {
@@ -61,14 +62,13 @@ class Jobs extends Component {
   state = {
     searchInput: '',
     apiStatus: apiStatusConstants.initial,
-    profileDetails: {},
+
     jobDetails: [],
     activeSalaryRangeId: 0,
     activeEmploymentTypeId: [],
   }
 
   componentDidMount() {
-    this.getProfileDetails()
     this.getJobsDetails()
   }
 
@@ -149,91 +149,11 @@ class Jobs extends Component {
     this.setState({searchInput: event.target.value})
   }
 
-  getProfileDetails = async () => {
-    this.setState({apiStatus: apiStatusConstants.inProgress})
-
-    const jwtToken = Cookies.get('jwt_token')
-
-    const apiUrl = 'https://apis.ccbp.in/profile'
-
-    const options = {
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-      },
-      method: 'GET',
-    }
-    const response = await fetch(apiUrl, options)
-
-    if (response.ok === true) {
-      const fetchedData = await response.json()
-      console.log(fetchedData)
-      const updatedData = {
-        name: fetchedData.profile_details.name,
-        profileImageUrl: fetchedData.profile_details.profile_image_url,
-        shortBio: fetchedData.profile_details.short_bio,
-      }
-      console.log(updatedData)
-
-      this.setState({
-        profileDetails: updatedData,
-        apiStatus: apiStatusConstants.success,
-      })
-    }
-    if (response.status === 401) {
-      this.setState({
-        apiStatus: apiStatusConstants.failure,
-      })
-    }
-  }
-
-  renderProfileDetailsView = () => {
-    const {profileDetails} = this.state
-    return (
-      <div className="profile-details-cont">
-        <img
-          src={profileDetails.profileImageUrl}
-          alt="profile"
-          className="profile-image"
-        />
-        <p className="profile-name">{profileDetails.name}</p>
-        <p className="profile-bio">{profileDetails.shortBio}</p>
-      </div>
-    )
-  }
-
   renderLoadingView = () => (
     <div className="loader-container" data-testid="loader">
       <Loader type="ThreeDots" color="#ffffff" height="50" width="50" />
     </div>
   )
-
-  onClickRetryBtn = () => {
-    this.getProfileDetails()
-  }
-
-  renderProfileFailureView = () => (
-    <div className="profile-failure-view">
-      <button
-        type="button"
-        className="retry-btn"
-        onClick={this.onClickRetryBtn}
-      >
-        Retry
-      </button>
-    </div>
-  )
-
-  renderProfileSection = () => {
-    const {apiStatus} = this.state
-    switch (apiStatus) {
-      case apiStatusConstants.success:
-        return this.renderProfileDetailsView()
-      case apiStatusConstants.failure:
-        return this.renderProfileFailureView()
-      default:
-        return this.renderLoadingView()
-    }
-  }
 
   onClickGetJobsRetryBtn = () => {
     this.getJobsDetails()
@@ -267,12 +187,12 @@ class Jobs extends Component {
               </div>
               <div className="job-location-type-salary-cont">
                 <div className="job-location-type-cont">
-                  <div className="job-type-location-cont">
+                  <div className="job-location-cont">
                     <MdLocationOn className="location-icon" />
                     <p className="job-location">{eachJob.location}</p>
                   </div>
-                  <div className="job-type-location-cont">
-                    <BsFillBriefcaseFill className="location-icon" />
+                  <div className="job-type-cont">
+                    <BsFillBriefcaseFill className="briefcase-icon" />
                     <p className="job-type">{eachJob.employmentType}</p>
                   </div>
                 </div>
@@ -344,27 +264,31 @@ class Jobs extends Component {
         <Header />
         <div className="jobs-container">
           <div className="jobs-content">
-            <div className="search-container">
-              <input
-                type="search"
-                className="search-input"
-                value={searchInput}
-                onChange={this.onChangeSearchInput}
-                placeholder="Search"
-              />
-              <button
-                type="button"
-                data-testid="searchButton"
-                onClick={this.onClickSearchInput}
-              >
-                <BsSearch className="search-icon" />
-              </button>
+            <div className="profile-search-input-cont">
+              <div className="search-container">
+                <input
+                  type="search"
+                  className="search-input"
+                  value={searchInput}
+                  onChange={this.onChangeSearchInput}
+                  placeholder="Search"
+                />
+                <button
+                  type="button"
+                  data-testid="searchButton"
+                  className="search-button"
+                  onClick={this.onClickSearchInput}
+                >
+                  <BsSearch className="search-icon" />
+                </button>
+              </div>
+              <ProfileDetails />
             </div>
-            {this.renderProfileSection()}
+
             <hr className="horizontal-line" />
             <div className="job-info-container">
               <p className="job-info-head">Type of Employment</p>
-              <ul className="job-info-list">
+              <ul className="job-info-list-cont">
                 {employmentTypesList.map(eachType => (
                   <li className="job-info-item" key={eachType.employmentTypeId}>
                     <input
@@ -373,7 +297,10 @@ class Jobs extends Component {
                       id={eachType.employmentTypeId}
                       onChange={this.onChangeEmploymentTypeId}
                     />
-                    <label htmlFor={eachType.employmentTypeId}>
+                    <label
+                      htmlFor={eachType.employmentTypeId}
+                      className="job-info-label-name "
+                    >
                       {eachType.label}
                     </label>
                   </li>
@@ -383,7 +310,7 @@ class Jobs extends Component {
             <hr className="horizontal-line" />
             <div className="job-info-container">
               <p className="job-info-head">Salary Range</p>
-              <ul className="job-info-list">
+              <ul className="job-info-list-cont">
                 {salaryRangesList.map(eachRange => (
                   <li className="job-info-item" key={eachRange.salaryRangeId}>
                     <input
@@ -392,7 +319,10 @@ class Jobs extends Component {
                       id={eachRange.salaryRangeId}
                       onChange={this.onChangeSalaryRangeId}
                     />
-                    <label htmlFor={eachRange.salaryRangeId}>
+                    <label
+                      htmlFor={eachRange.salaryRangeId}
+                      className="job-info-label-name "
+                    >
                       {eachRange.label}
                     </label>
                   </li>
